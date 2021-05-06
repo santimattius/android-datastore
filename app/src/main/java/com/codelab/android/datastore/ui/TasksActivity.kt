@@ -17,33 +17,36 @@
 package com.codelab.android.datastore.ui
 
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.lifecycle.observe
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.codelab.android.datastore.data.SortOrder
 import com.codelab.android.datastore.data.TasksRepository
 import com.codelab.android.datastore.data.UserPreferencesRepository
+import com.codelab.android.datastore.data.dataStore
 import com.codelab.android.datastore.databinding.ActivityTasksBinding
+
+
 
 class TasksActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTasksBinding
     private val adapter = TasksAdapter()
 
-    private lateinit var viewModel: TasksViewModel
+    private val viewModel: TasksViewModel by viewModels {
+        TasksViewModelFactory(
+            TasksRepository,
+            UserPreferencesRepository(dataStore, this)
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTasksBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
-        viewModel = ViewModelProvider(
-            this,
-            TasksViewModelFactory(TasksRepository, UserPreferencesRepository.getInstance(this))
-        ).get(TasksViewModel::class.java)
-
         setupRecyclerView()
         setupFilterListeners(viewModel)
         setupSort()
